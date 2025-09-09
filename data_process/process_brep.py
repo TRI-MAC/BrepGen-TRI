@@ -5,10 +5,50 @@ from tqdm import tqdm
 from multiprocessing.pool import Pool
 from convert_utils import *
 from occwl.io import load_step
+from OCC.Core.STEPControl import STEPControl_Reader
+from OCC.Core.TopExp import TopExp_Explorer
+from OCC.Core.TopAbs import TopAbs_SOLID, TopAbs_SHELL, TopAbs_FACE
+from OCC.Core.TopoDS import topods_Solid, topods_Shell
+from OCC.Core.IFSelect import IFSelect_RetDone
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
+from occwl.solid import Solid
 
 
 # To speed up processing, define maximum threshold
 MAX_FACE = 70
+
+def shells_to_solids(shells):
+    solids = []
+    for shell in shells:
+        # Convert to TopoDS_Shell if needed
+        shell = topods_Shell(shell)
+        solid_maker = BRepBuilderAPI_MakeSolid()
+        solid_maker.Add(shell)
+        if solid_maker.IsDone():
+            solids.append(solid_maker.Solid())
+    return solids
+
+def load_step_with_occ(filename):
+    reader = STEPControl_Reader()
+    status = reader.ReadFile(filename)
+    if status != IFSelect_RetDone:
+        raise ValueError("Failed to read the STEP file")
+    reader.TransferRoots()
+    shape = reader.OneShape()
+    # Try with SHELL
+    shells = []
+    exp = TopExp_Explorer(shape, TopAbs_SHELL)
+    while exp.More():
+        shells.append(exp.Current())
+        exp.Next()
+    # Try with FACE
+    faces = []
+    exp = TopExp_Explorer(shape, TopAbs_FACE)
+    while exp.More():
+        faces.append(exp.Current())
+        exp.Next()
+    solids = shells_to_solids(shells)
+    return solids
 
 def normalize(surf_pnts, edge_pnts, corner_pnts):
     """
@@ -153,7 +193,7 @@ def process(step_folder):
     """
     try:
         # Load cad data
-        if step_folder.endswith('.step'):
+        if step_folder.endswith('.step') or step_folder.endswith('.stp'):
             step_path = step_folder 
             process_furniture = True
         else:
@@ -164,16 +204,19 @@ def process(step_folder):
 
         # Check single solid
         cad_solid = load_step(step_path)
+        if len(cad_solid) == 0:
+            # Convert TopoDS_Solid to OCCWL Solid
+            cad_solid = load_step_with_occ(step_path)
+            cad_solid = [Solid(s) for s in cad_solid]
+        print(len(cad_solid), ' solids in ', step_path)
         if len(cad_solid)!=1: 
             print('Skipping multi solids...')
             return 0 
             
-        # Start data parsing
         data = parse_solid(cad_solid[0])
         if data is None: 
             print ('Exceeding threshold...')
             return 0 # number of faces or edges exceed pre-determined threshold
-
         # Save the parsed result 
         if process_furniture:
             data_uid = step_path.split('/')[-2] + '_' + step_path.split('/')[-1]
@@ -182,8 +225,9 @@ def process(step_folder):
             data_uid = step_path.split('/')[-2]
             sub_folder = data_uid[:4]
             
-        if data_uid.endswith('.step'):
-            data_uid = data_uid[:-5] # furniture avoid .step
+        if data_uid.endswith('.step') or data_uid.endswith('.stp'):
+            # data_uid = data_uid[:-5] # furniture avoid .step
+            data_uid = data_uid.rsplit('.', 1)[0]
 
         data['uid'] = data_uid
         save_folder = os.path.join(OUTPUT, sub_folder)
@@ -204,7 +248,7 @@ def process(step_folder):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=str, help="Data folder path", required=True)
-    parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture'], default='abc', 
+    parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture', 'tmc'], default='abc', 
                         help="Choose between dataset option [abc/deepcad/furniture] (default: abc)")
     parser.add_argument("--interval", type=int, help="Data range index, only required for abc/deepcad")
     args = parser.parse_args()    
@@ -213,11 +257,13 @@ if __name__ == '__main__':
         OUTPUT = 'deepcad_parsed'
     elif args.option == 'abc': 
         OUTPUT = 'abc_parsed'
+    elif args.option == 'tmc':
+        OUTPUT = 'tmc_parsed' 
     else:
         OUTPUT = 'furniture_parsed'
     
     # Load all STEP files
-    if args.option == 'furniture':
+    if args.option == 'furniture' or args.option == 'tmc' :
         step_dirs = load_furniture_step(args.input)
     else:
         step_dirs = load_abc_step(args.input, args.option=='deepcad')

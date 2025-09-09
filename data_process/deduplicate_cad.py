@@ -8,7 +8,7 @@ from convert_utils import *
 parser = argparse.ArgumentParser()
 parser.add_argument("--data", type=str, help="Data folder path", required=True)
 parser.add_argument("--bit",  type=int, help='Deduplicate precision')
-parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture'], default='abc', 
+parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture', 'tmc'], default='abc', 
                     help="Choose between dataset option [abc/deepcad/furniture] (default: abc)")
 args = parser.parse_args()
 
@@ -16,11 +16,13 @@ if args.option == 'deepcad':
     OUTPUT = f'deepcad_data_split_{args.bit}bit.pkl'
 elif args.option == 'abc': 
     OUTPUT = f'abc_data_split_{args.bit}bit.pkl'
+elif args.option == 'tmc':
+    OUTPUT = f'tmc_data_split_{args.bit}bit.pkl'
 else:
     OUTPUT = f'furniture_data_split_{args.bit}bit.pkl'
 
 # Load all STEP folders
-if args.option == 'furniture':
+if args.option == 'furniture' or args.option == 'tmc':
     train, val_path, test_path = load_furniture_pkl(args.data)
 else:
     train, val_path, test_path = load_abc_pkl(args.data, args.option=='deepcad')
@@ -34,7 +36,7 @@ for path_idx, uid in tqdm(enumerate(train)):
     total += 1
 
     # Load pkl data
-    if args.option == 'furniture':
+    if args.option == 'furniture' or args.option == 'tmc':
         path = os.path.join(args.data, uid)
     else:
         path = os.path.join(args.data, str(math.floor(int(uid.split('.')[0])/10000)).zfill(4), uid)

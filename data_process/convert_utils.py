@@ -177,7 +177,7 @@ def load_furniture_step(root_dir):
     for root, dirs, files in os.walk(root_dir):
         for filename in files:
             # Check if the file ends with the specified prefix
-            if filename.endswith('.step'):
+            if filename.endswith('.step') or filename.endswith('.stp'):
                 file_path = os.path.join(root, filename)
                 data_files.append(file_path)
     return data_files

@@ -23,3 +23,6 @@ done
 
 ### Process Furniture data ###
 python process_brep.py --input path/to/your/furniture_step --option 'furniture'
+
+## Process TMC data ###
+python process_brep.py --input '/home/ec2-user/yanying/Bracket/STEP' --option 'tmc'

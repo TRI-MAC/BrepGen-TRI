@@ -2,7 +2,7 @@
 torch
 torchvision
 torchaudio
-diffusers[torch]==0.27
+diffusers[torch]
 transformers
 wandb
 matplotlib

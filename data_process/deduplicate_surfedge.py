@@ -11,7 +11,7 @@ parser.add_argument("--data", type=str, help="CAD .pkl file", required=True)
 parser.add_argument("--list", type=str, help="UID list", required=True)
 parser.add_argument("--edge",  action='store_true', help='Process edge instead of surface')
 parser.add_argument("--bit",  type=int, help='Deduplicate precision')
-parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture'], default='abc', 
+parser.add_argument("--option", type=str, choices=['abc', 'deepcad', 'furniture', 'tmc'], default='abc', 
                     help="Choose between dataset option [abc/deepcad/furniture] (default: abc)")
 args = parser.parse_args()
 
@@ -24,8 +24,9 @@ unique_hash = set()
 total = 0
 
 for path_idx, uid in tqdm(enumerate(data_list)):
-    if args.option == 'furniture':
+    if args.option == 'furniture' or args.option == 'tmc':
         path = os.path.join(args.data, uid)
+        print(path)
     else:
         path = os.path.join(args.data, str(math.floor(int(uid.split('.')[0])/10000)).zfill(4), uid)
     with open(path, "rb") as file:
