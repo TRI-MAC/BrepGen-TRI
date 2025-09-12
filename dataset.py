@@ -97,7 +97,10 @@ def load_data(input_data, input_list, validate, args):
             class_label = -1  # unconditional generation (abc/deepcad)
         except Exception:
             path = os.path.join(input_data, uid)  
-            class_label = text2int[uid.split('/')[0]]  # conditional generation (furniture)
+            if args.cf:
+                class_label = text2int[uid.split('/')[0]]  # conditional generation (furniture)
+            else:
+                class_label = -1  # unconditional generation (tmc)
         data_paths.append(path)
         data_classes.append(class_label)
     
