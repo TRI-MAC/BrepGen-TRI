@@ -89,18 +89,18 @@ python ldm.py --data data_process/tmc_parsed \
 
 python ldm.py --data data_process/tmc_parsed \
     --list data_process/tmc_data_split_6bit.pkl --option surfz \
-    --surfvae proj_log/tmc_vae_surf.pt --gpu 0 1 \
+    --surfvae proj_log/tmc_vae_surf/epoch_200.pt --gpu 0 1 \
     --env tmc_ldm_surfz --train_nepoch 3000 --batch_size 256 \
     --max_face 50 --max_edge 30
 
 python ldm.py --data data_process/tmc_parsed \
     --list data_process/tmc_data_split_6bit.pkl --option edgepos \
-    --surfvae proj_log/tmc_vae_surf.pt --gpu 0 1 \
+    --surfvae proj_log/tmc_vae_surf/epoch_200.pt --gpu 2 3 \
     --env tmc_ldm_edgepos --train_nepoch 1000 --batch_size 64 \
     --max_face 50 --max_edge 30
 
 python ldm.py --data data_process/tmc_parsed \
     --list data_process/tmc_data_split_6bit.pkl --option edgez \
-    --surfvae proj_log/tmc_vae_surf.pt --edgevae proj_log/tmc_vae_edge.pt --gpu 0 1 \
+    --surfvae proj_log/tmc_vae_surf/epoch_200.pt --edgevae proj_log/tmc_vae_edge/epoch_200.pt --gpu 2 3 \
     --env tmc_ldm_edgez --train_nepoch 1000 --batch_size 64 \
     --max_face 50 --max_edge 30

@@ -28,7 +28,23 @@ def shells_to_solids(shells):
             solids.append(solid_maker.Solid())
     return solids
 
-def load_step_with_occ(filename):
+def save_solids_to_step(solids, output_dir, base_name):
+    """
+    Save each solid in the list to a STEP file in the specified directory.
+    """
+    from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
+    import os
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    for idx, solid in enumerate(solids):
+        writer = STEPControl_Writer()
+        writer.Transfer(solid, STEPControl_AsIs)
+        step_path = os.path.join(output_dir, f"{base_name}_solid{idx+1}.step")
+        status = writer.Write(step_path)
+        if status != IFSelect_RetDone:
+            print(f"Failed to write STEP file: {step_path}")
+
+def load_step_with_occ(filename, save_step_dir=None, base_name=None):
     reader = STEPControl_Reader()
     status = reader.ReadFile(filename)
     if status != IFSelect_RetDone:
@@ -48,6 +64,9 @@ def load_step_with_occ(filename):
         faces.append(exp.Current())
         exp.Next()
     solids = shells_to_solids(shells)
+    # # Save solids to STEP files if requested
+    # if save_step_dir is not None and base_name is not None:
+    #     save_solids_to_step(solids, save_step_dir, base_name)
     return solids
 
 def normalize(surf_pnts, edge_pnts, corner_pnts):

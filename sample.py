@@ -371,8 +371,8 @@ def sample(eval_args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", type=str, choices=['abc', 'deepcad', 'furniture'], default='abc', 
-                        help="Choose between evaluation mode [abc/deepcad/furniture] (default: abc)")
+    parser.add_argument("--mode", type=str, choices=['abc', 'deepcad', 'furniture', 'tmc'], default='abc', 
+                        help="Choose between evaluation mode [abc/deepcad/furniture/tmc] (default: abc)")
     args = parser.parse_args()    
 
     # Load evaluation config 
