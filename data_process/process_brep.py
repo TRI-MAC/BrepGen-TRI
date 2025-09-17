@@ -64,9 +64,9 @@ def load_step_with_occ(filename, save_step_dir=None, base_name=None):
         faces.append(exp.Current())
         exp.Next()
     solids = shells_to_solids(shells)
-    # # Save solids to STEP files if requested
-    # if save_step_dir is not None and base_name is not None:
-    #     save_solids_to_step(solids, save_step_dir, base_name)
+    # Save solids to STEP files if requested
+    if save_step_dir is not None and base_name is not None:
+        save_solids_to_step(solids, save_step_dir, base_name)
     return solids
 
 def normalize(surf_pnts, edge_pnts, corner_pnts):
