@@ -12,6 +12,8 @@ from OCC.Core.TopoDS import topods_Solid, topods_Shell
 from OCC.Core.IFSelect import IFSelect_RetDone
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeSolid
 from occwl.solid import Solid
+from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
+
 
 
 # To speed up processing, define maximum threshold
@@ -32,19 +34,18 @@ def save_solids_to_step(solids, output_dir, base_name):
     """
     Save each solid in the list to a STEP file in the specified directory.
     """
-    from OCC.Core.STEPControl import STEPControl_Writer, STEPControl_AsIs
-    import os
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     for idx, solid in enumerate(solids):
         writer = STEPControl_Writer()
         writer.Transfer(solid, STEPControl_AsIs)
         step_path = os.path.join(output_dir, f"{base_name}_solid{idx+1}.step")
+        print("save solid to", step_path)
         status = writer.Write(step_path)
         if status != IFSelect_RetDone:
             print(f"Failed to write STEP file: {step_path}")
 
-def load_step_with_occ(filename, save_step_dir=None, base_name=None):
+def load_step_with_occ(filename):
     reader = STEPControl_Reader()
     status = reader.ReadFile(filename)
     if status != IFSelect_RetDone:
@@ -64,9 +65,11 @@ def load_step_with_occ(filename, save_step_dir=None, base_name=None):
         faces.append(exp.Current())
         exp.Next()
     solids = shells_to_solids(shells)
-    # Save solids to STEP files if requested
-    if save_step_dir is not None and base_name is not None:
-        save_solids_to_step(solids, save_step_dir, base_name)
+    # # Save solids to STEP files if requested
+    # save_step_dir = 'Bracket_solids'
+    # base_name = filename.split('/')[-1].rsplit('.', 1)[0]
+    # if save_step_dir is not None and base_name is not None:
+    #     save_solids_to_step(solids, save_step_dir, base_name)
     return solids
 
 def normalize(surf_pnts, edge_pnts, corner_pnts):
@@ -277,7 +280,7 @@ if __name__ == '__main__':
     elif args.option == 'abc': 
         OUTPUT = 'abc_parsed'
     elif args.option == 'tmc':
-        OUTPUT = 'tmc_parsed' 
+        OUTPUT = 'tmc_parsed_2' 
     else:
         OUTPUT = 'furniture_parsed'
     
