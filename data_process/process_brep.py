@@ -280,7 +280,7 @@ if __name__ == '__main__':
     elif args.option == 'abc': 
         OUTPUT = 'abc_parsed'
     elif args.option == 'tmc':
-        OUTPUT = 'tmc_parsed_2' 
+        OUTPUT = 'tmc_parsed' 
     else:
         OUTPUT = 'furniture_parsed'
     
