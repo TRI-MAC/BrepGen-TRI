@@ -380,5 +380,8 @@ if __name__ == "__main__":
         config = yaml.safe_load(file)
     eval_args = config[args.mode]
 
-    while(True):
+    count = 0
+    while(count<500):
+        print('The %d-th sampling...' %count)
         sample(eval_args)
+        count += 1
